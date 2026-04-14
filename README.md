@@ -8,7 +8,7 @@
 
 > A production-grade, real-time gamified competitive coding platform — built for developers who want to practice, compete, and grow.
 
-🔗 **[Live Demo](https://your-live-demo-link.com)** · 📂 **[GitHub Repo](https://github.com/TusarGoswami/Head-2-Code)**
+🔗 **[Live Demo](http://head2code.duckdns.org/)** · 📂 **[GitHub Repo](https://github.com/TusarGoswami/Head-2-Code)**
 
 ---
 
