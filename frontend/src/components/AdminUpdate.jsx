@@ -3,7 +3,6 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import axiosClient from '../utils/axiosClient';
-import { useNavigate } from 'react-router';
 
 // Zod schema matching the problem schema
 const problemSchema = z.object({
@@ -39,7 +38,6 @@ const problemSchema = z.object({
 });
 
 const AdminUpdate = () => {
-  const navigate = useNavigate();
   const [problems, setProblems] = useState([]);
   const [selectedProblem, setSelectedProblem] = useState(null);
   const [loading, setLoading] = useState(true);

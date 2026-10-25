@@ -3,7 +3,7 @@ import { Cpu, AlertCircle, Zap, Clock, Brain, LineChart, TrendingUp, ChevronRigh
 
 // Static complexity analyzer that works without API keys
 // Uses enhanced pattern matching to determine code complexity accurately for multiple languages
-const StaticComplexityAnalyzer = ({ code, language, problem }) => {
+const StaticComplexityAnalyzer = ({ code }) => {
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);

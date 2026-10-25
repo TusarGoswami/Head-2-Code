@@ -15,7 +15,6 @@ const ComplexityAnalyzer = ({ code, language, problem }) => {
   const [error, setError] = useState(null);
   const [hoveredBreakdown, setHoveredBreakdown] = useState(null);
   const canvasRef = useRef(null);
-  const animationFrameRef = useRef(null);
 
   const analyzeComplexity = async () => {
     if (!code || code.trim() === '') {

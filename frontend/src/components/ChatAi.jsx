@@ -12,7 +12,7 @@ function ChatAi({ problem }) {
     const [typingMessage, setTypingMessage] = useState("");
     const [isTyping, setIsTyping] = useState(false);
     
-    const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm();
+    const { register, handleSubmit, reset, formState: { errors } } = useForm();
     const messagesEndRef = useRef(null);
 
     useEffect(() => {
