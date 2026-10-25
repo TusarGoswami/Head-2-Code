@@ -66,16 +66,14 @@ const submitCode = async (req, res) => {
     for (const test of testResult) {
       if (test.status_id == 3) {
         testCasesPassed++;
-        runtime = runtime + parseFloat(test.time)
-        memory = Math.max(memory, test.memory);
+        runtime = runtime + (parseFloat(test.time) || 0);
+        memory = Math.max(memory, test.memory || 0);
       } else {
+        errorMessage = test.compile_output || test.stderr || test.message || 'Execution Error';
         if (test.status_id == 4) {
-          status = 'error'
-          errorMessage = test.stderr
-        }
-        else {
-          status = 'wrong'
-          errorMessage = test.stderr
+          status = 'error';
+        } else {
+          status = 'wrong';
         }
       }
     }
@@ -94,21 +92,23 @@ const submitCode = async (req, res) => {
 
     // req.result == user Information
 
-    if (!req.result.problemSolved.includes(problemId)) {
-      req.result.problemSolved.push(problemId);
-      await req.result.save();
+    if (status === 'accepted') {
+      if (!req.result.problemSolved.includes(problemId)) {
+        req.result.problemSolved.push(problemId);
+        await req.result.save();
 
-      // Check and unlock badges
-      try {
-        const { checkAndUnlockBadges } = require('./achievementController');
-        await checkAndUnlockBadges(req.result._id, {
-          type: 'problemSolved',
-          difficulty: problem.difficulty,
-          topic: problem.tags
-        });
-      } catch (badgeError) {
-        console.error('Error checking badges:', badgeError);
-        // Don't fail the submission if badge checking fails
+        // Check and unlock badges
+        try {
+          const { checkAndUnlockBadges } = require('./achievementController');
+          await checkAndUnlockBadges(req.result._id, {
+            type: 'problemSolved',
+            difficulty: problem.difficulty,
+            topic: problem.tags
+          });
+        } catch (badgeError) {
+          console.error('Error checking badges:', badgeError);
+          // Don't fail the submission if badge checking fails
+        }
       }
     }
 
@@ -173,17 +173,11 @@ const runCode = async (req, res) => {
     for (const test of testResult) {
       if (test.status_id == 3) {
         testCasesPassed++;
-        runtime = runtime + parseFloat(test.time)
-        memory = Math.max(memory, test.memory);
+        runtime = runtime + (parseFloat(test.time) || 0);
+        memory = Math.max(memory, test.memory || 0);
       } else {
-        if (test.status_id == 4) {
-          status = false
-          errorMessage = test.stderr
-        }
-        else {
-          status = false
-          errorMessage = test.stderr
-        }
+        status = false;
+        errorMessage = test.compile_output || test.stderr || test.message || 'Execution Error';
       }
     }
 
