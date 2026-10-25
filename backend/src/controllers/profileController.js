@@ -44,8 +44,8 @@ const getProfile = async (req, res) => {
         const streak = await Streak.findOne({ userId }) || { currentStreak: 0, longestStreak: 0 };
 
         // Calculate badges based on achievements
-        const badges = [];
-        const solvedCount = user.problemSolved.length;
+        const validProblems = (user.problemSolved || []).filter(Boolean);
+        const solvedCount = validProblems.length;
 
         if (solvedCount >= 1) badges.push({ name: 'First Steps', icon: '🎯', description: 'Solved your first problem' });
         if (solvedCount >= 10) badges.push({ name: 'Problem Solver', icon: '💡', description: 'Solved 10 problems' });
@@ -56,9 +56,11 @@ const getProfile = async (req, res) => {
         if (acceptanceRate >= 80) badges.push({ name: 'Accuracy Expert', icon: '🎖️', description: '80%+ acceptance rate' });
 
         // Count problems by difficulty
-        const difficultyBreakdown = user.problemSolved.reduce((acc, problem) => {
-            const diff = problem.difficulty;
-            acc[diff] = (acc[diff] || 0) + 1;
+        const difficultyBreakdown = validProblems.reduce((acc, problem) => {
+            const diff = problem?.difficulty;
+            if (diff && acc[diff] !== undefined) {
+                acc[diff] = (acc[diff] || 0) + 1;
+            }
             return acc;
         }, { easy: 0, medium: 0, hard: 0 });
 

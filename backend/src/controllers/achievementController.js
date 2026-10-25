@@ -49,7 +49,7 @@ const getUserAchievements = async (req, res) => {
 // Get badge progress for a user
 const getBadgeProgress = async (req, res) => {
     try {
-        const userId = req.user._id;
+        const userId = req.result?._id || req.user?._id;
         const user = await User.findById(userId).populate('problemSolved');
 
         if (!user) {
@@ -188,7 +188,7 @@ const checkAndUnlockBadges = async (userId, action) => {
 // Mark badge notification as seen
 const markNotificationSeen = async (req, res) => {
     try {
-        const userId = req.user._id;
+        const userId = req.result?._id || req.user?._id;
         const { badgeId } = req.params;
 
         const user = await User.findById(userId);
@@ -211,7 +211,7 @@ const markNotificationSeen = async (req, res) => {
 // Get unseen badge notifications
 const getUnseenBadges = async (req, res) => {
     try {
-        const userId = req.user._id;
+        const userId = req.result?._id || req.user?._id;
         const user = await User.findById(userId);
 
         if (!user) {

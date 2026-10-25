@@ -120,7 +120,7 @@ const joinContest = async (req, res) => {
             // User already joined, update their times if needed
             if (!existingParticipant.startTime) {
                 existingParticipant.startTime = now;
-                existingParticipant.endTime = new Date(now.getTime() + contest.duration * 60 * 1000);
+                existingParticipant.endTime = new Date(Math.min(now.getTime() + contest.duration * 60 * 1000, new Date(contest.endTime).getTime()));
                 await contest.save();
             }
 
@@ -147,7 +147,9 @@ const joinContest = async (req, res) => {
 
         // Add user as participant
         const userStartTime = now;
-        const userEndTime = new Date(userStartTime.getTime() + contest.duration * 60 * 1000);
+        const calculatedEndTime = userStartTime.getTime() + contest.duration * 60 * 1000;
+        const contestGlobalEndTime = new Date(contest.endTime).getTime();
+        const userEndTime = new Date(Math.min(calculatedEndTime, contestGlobalEndTime));
 
         contest.participants.push({
             userId,
