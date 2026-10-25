@@ -5,8 +5,7 @@ const dailyChallengeSchema = new Schema({
     date: {
         type: Date,
         required: true,
-        unique: true,
-        index: true
+        unique: true
     },
     problemId: {
         type: Schema.Types.ObjectId,
@@ -20,9 +19,6 @@ const dailyChallengeSchema = new Schema({
 }, {
     timestamps: true
 });
-
-// Index to ensure one challenge per day
-dailyChallengeSchema.index({ date: 1 }, { unique: true });
 
 const DailyChallenge = mongoose.model('dailyChallenge', dailyChallengeSchema);
 

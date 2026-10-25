@@ -108,8 +108,7 @@ const friendArenaSchema = new Schema({
     timestamps: true
 });
 
-// Index for room code lookup
-friendArenaSchema.index({ roomCode: 1 });
+// Index for status lookup
 friendArenaSchema.index({ status: 1 });
 
 const FriendArena = mongoose.model('friendArena', friendArenaSchema);
