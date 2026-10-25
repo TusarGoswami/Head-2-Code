@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import { useForm } from 'react-hook-form';
 import Editor from '@monaco-editor/react';
 import { 
   Sun, Moon, Play, Send, Code2, FileText, Check, X, Clock, 
@@ -35,8 +34,6 @@ const DailyChallengePage = () => {
   const [particles, setParticles] = useState([]);
   const editorRef = useRef(null);
   const headerRef = useRef(null);
-
-  const { handleSubmit } = useForm();
 
   useEffect(() => {
     fetchDailyChallenge();

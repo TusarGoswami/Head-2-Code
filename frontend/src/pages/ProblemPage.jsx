@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import { useForm } from 'react-hook-form';
 import Editor from '@monaco-editor/react';
 import { useParams } from 'react-router';
 import { Sun, Moon, Play, Send, Code2, FileText, Lightbulb, History, MessageSquare, Check, X, Clock, Cpu, Trophy, ChevronRight, Zap, Sparkles, Target, Award, CheckCircle2, XCircle } from 'lucide-react';
@@ -27,8 +26,6 @@ const ProblemPage = () => {
   const [activeRightTab, setActiveRightTab] = useState('code');
   const editorRef = useRef(null);
   let { problemId } = useParams();
-
-  const { handleSubmit } = useForm();
 
   useEffect(() => {
     const fetchProblem = async () => {

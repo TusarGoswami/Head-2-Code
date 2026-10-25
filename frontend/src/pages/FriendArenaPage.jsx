@@ -26,7 +26,6 @@ function FriendArenaPage() {
   const [selectedProblem, setSelectedProblem] = useState(null);
   const [selectedLanguage, setSelectedLanguage] = useState('javascript');
   const [code, setCode] = useState('');
-  const [loading, setLoading] = useState(false);
   const [running, setRunning] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [runResult, setRunResult] = useState(null);
@@ -37,20 +36,15 @@ function FriendArenaPage() {
   const [tabSwitches, setTabSwitches] = useState(0);
   const [isDisqualified, setIsDisqualified] = useState(false);
   const [showFullscreenWarning, setShowFullscreenWarning] = useState(true);
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode] = useState(true);
   const [activeRightTab, setActiveRightTab] = useState('code');
-  const [activeLeftTab, setActiveLeftTab] = useState('description');
   const [particles, setParticles] = useState([]);
   const [isFloating, setIsFloating] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const socketRef = useRef(null);
-  const editorRef = useRef(null);
   const timerIntervalRef = useRef(null);
   const userEndTimeRef = useRef(null);
   const tabSwitchCountRef = useRef(0);
-  const visibilityChangeRef = useRef(false);
-  const problemProgressRef = useRef({});
-  const animationFrameRef = useRef(null);
 
   useEffect(() => {
     if (darkMode) {
@@ -193,7 +187,7 @@ function FriendArenaPage() {
       return null;
     };
 
-    socketRef.current = io('http://localhost:3000', {
+    socketRef.current = io(import.meta.env.VITE_API_URL || 'http://localhost:5000', {
       auth: {
         token: getCookie('token')
       },
@@ -452,9 +446,6 @@ function FriendArenaPage() {
   }
 
   const isCreator = arena.createdBy._id === user?._id || arena.createdBy === user?._id;
-  const participant = arena.participants?.find(
-    p => (p.userId._id || p.userId) === user?._id
-  );
 
   return (
     <div className={`min-h-screen transition-all duration-500 ${darkMode ? 'dark bg-gradient-to-br from-slate-950 via-gray-900 to-slate-950' : 'bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50'}`}>
@@ -772,7 +763,6 @@ function FriendArenaPage() {
                       sc => sc.language === langMap[selectedLanguage]
                     )?.initialCode || '';
                     setCode(initialCode);
-                    setActiveLeftTab('description');
                   }}
                   className={`relative flex-1 px-4 py-3 text-sm font-medium transition-all duration-300 border-b-2 group ${
                     selectedProblem?._id === problem._id

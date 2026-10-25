@@ -31,7 +31,7 @@ function ContestPage() {
   const [contestEnded, setContestEnded] = useState(false);
   const [endingContest, setEndingContest] = useState(false);
   const [error, setError] = useState('');
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode] = useState(true);
   const [activeRightTab, setActiveRightTab] = useState('code');
   const socketRef = useRef(null);
   const editorRef = useRef(null);
@@ -61,7 +61,7 @@ function ContestPage() {
       return null;
     };
 
-    socketRef.current = io('http://localhost:3000', {
+    socketRef.current = io(import.meta.env.VITE_API_URL || 'http://localhost:5000', {
       auth: {
         token: getCookie('token')
       },
@@ -167,6 +167,19 @@ function ContestPage() {
       setActiveRightTab('code');
     }
   }, [selectedProblem, selectedLanguage, contest]);
+
+  const now = new Date();
+  const startTime = contest?.startTime ? new Date(contest.startTime) : null;
+  const endTime = contest?.endTime ? new Date(contest.endTime) : null;
+  const contestStarted = startTime ? now >= startTime : false;
+  const globalContestEnded = endTime ? now > endTime : false;
+
+  // Auto-switch to leaderboard tab if contest ended
+  useEffect(() => {
+    if ((contestEnded || globalContestEnded) && activeRightTab !== 'leaderboard' && leaderboard.length > 0) {
+      setActiveRightTab('leaderboard');
+    }
+  }, [contestEnded, globalContestEnded, activeRightTab, leaderboard.length]);
 
   const fetchContest = async () => {
     try {
@@ -435,20 +448,6 @@ function ContestPage() {
       </div>
     );
   }
-
-  const now = new Date();
-  const startTime = new Date(contest.startTime);
-  const endTime = new Date(contest.endTime);
-  const contestStarted = now >= startTime;
-  const globalContestEnded = now > endTime;
-  
-  // Auto-switch to leaderboard tab if contest ended
-  useEffect(() => {
-    if ((contestEnded || globalContestEnded) && activeRightTab !== 'leaderboard' && leaderboard.length > 0) {
-      setActiveRightTab('leaderboard');
-    }
-  }, [contestEnded, globalContestEnded, leaderboard.length]);
-
   if (!joined && !globalContestEnded) {
     return (
       <div className="min-h-screen bg-base-200 p-6">
