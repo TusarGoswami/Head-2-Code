@@ -2,9 +2,20 @@ const express = require('express');
 const path = require('path');
 const http = require('http');
 const { Server } = require('socket.io');
+const fs = require('fs');
 const app = express();
 
-require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+const envPaths = [
+    path.resolve(__dirname, '../.env'),
+    path.resolve(__dirname, './.env'),
+    path.resolve(__dirname, '../../.env')
+];
+for (const envPath of envPaths) {
+    if (fs.existsSync(envPath)) {
+        require('dotenv').config({ path: envPath });
+        break;
+    }
+}
 
 const main = require('./config/db');
 const cookieParser = require('cookie-parser');
@@ -21,21 +32,24 @@ const dailyChallengeRouter = require("./routes/dailyChallenge");
 const friendArenaRouter = require("./routes/friendArena");
 const profileRouter = require("./routes/profile");
 const achievementsRouter = require("./routes/achievements");
+const complexityRouter = require("./routes/complexityAnalyzer");
 
 // Create HTTP server
 const server = http.createServer(app);
 
+const allowedOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:5175', 'http://127.0.0.1:5175'];
+
 // Setup Socket.io
 const io = new Server(server, {
     cors: {
-        origin: ['http://localhost:5173', 'http://localhost:5175'],
+        origin: allowedOrigins,
         credentials: true,
         methods: ['GET', 'POST']
     }
 });
 
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:5175'],
+    origin: allowedOrigins,
     credentials: true
 }));
 
@@ -52,6 +66,7 @@ app.use('/daily-challenge', dailyChallengeRouter);
 app.use('/friend-arena', friendArenaRouter);
 app.use('/profile', profileRouter);
 app.use('/achievements', achievementsRouter);
+app.use('/complexity', complexityRouter);
 
 // Socket.io connection handling
 const jwt = require('jsonwebtoken');
@@ -66,7 +81,7 @@ io.use(async (socket, next) => {
             return next(new Error('Authentication error'));
         }
 
-        const payload = jwt.verify(token, process.env.JWT_KEY);
+        const payload = jwt.verify(token, process.env.JWT_KEY || 'default_jwt_key');
         const user = await User.findById(payload._id);
         if (!user) {
             return next(new Error('User not found'));
@@ -280,15 +295,19 @@ app.set('broadcastFriendArenaLeaderboard', broadcastFriendArenaLeaderboardUpdate
 
 const InitalizeConnection = async () => {
     try {
-        await Promise.all([
-            main(),
-            redisClient.connect()
-        ]);
+        await main();
+        console.log("✅ MongoDB Connected");
 
-        console.log("✅ MongoDB & Redis Connected");
+        try {
+            await redisClient.connect();
+            console.log("✅ Redis Connected");
+        } catch (redisErr) {
+            console.warn("⚠️ Redis Connection Warning:", redisErr.message);
+            console.warn("   (Server will continue, but Redis features require Redis service running)");
+        }
 
-        server.listen(process.env.PORT, () => {
-            console.log("🚀 Server listening at port:", process.env.PORT);
+        server.listen(process.env.PORT || 5000, () => {
+            console.log("🚀 Server listening at port:", process.env.PORT || 5000);
             console.log("🔌 Socket.io server ready");
         });
 

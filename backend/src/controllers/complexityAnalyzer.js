@@ -3,8 +3,11 @@ const { GoogleGenAI } = require("@google/genai");
 // Initialize Google Generative AI with the dedicated analyzer API key
 // Updated to use the latest API key for better quota management
 // Added improved error handling for rate limiting and API errors
-// Implemented caching and request throttling to prevent rate limiting
-const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_ANALYZER_API_KEY });
+const getGenAI = () => {
+  const apiKey = process.env.GEMINI_ANALYZER_API_KEY || process.env.GEMINI_KEY;
+  if (!apiKey) return null;
+  return new GoogleGenAI({ apiKey });
+};
 
 // Simple in-memory cache for complexity analysis results
 const analysisCache = new Map();
@@ -70,6 +73,11 @@ const analyzeComplexity = async (req, res) => {
     // Add current timestamp
     requestTimestamps.push(now);
 
+    const genAI = getGenAI();
+    if (!genAI) {
+      return res.status(503).json({ error: 'Gemini API key is not configured' });
+    }
+
     // Create a prompt for complexity analysis
     const prompt = `
     Analyze the time and space complexity of the following ${language} code:
@@ -114,7 +122,7 @@ const analyzeComplexity = async (req, res) => {
     });
 
     // Extract the text response
-    const text = response.text();
+    const text = typeof response.text === 'function' ? response.text() : (response.text || '');
 
     // Try to parse the response as JSON
     try {

@@ -219,7 +219,7 @@ Remember: Your goal is to help users learn and understand DSA concepts through t
         
         // Generate content using Gemini
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-2.0-flash",
             contents: formattedContents,
             config: {
                 systemInstruction: systemInstruction,
