@@ -19,7 +19,7 @@ const register = async (req,res)=>{
     //
     
      const user =  await User.create(req.body);
-     const token =  jwt.sign({_id:user._id , emailId:emailId, role:'user'},process.env.JWT_KEY,{expiresIn: 60*60});
+     const token =  jwt.sign({_id:user._id , emailId:emailId, role:'user'}, process.env.JWT_KEY || 'default_jwt_key', {expiresIn: 60*60});
      const reply = {
         firstName: user.firstName,
         emailId: user.emailId,
@@ -49,9 +49,13 @@ const login = async (req,res)=>{
         if(!password)
             throw new Error("Invalid Credentials");
 
-        const user = await User.findOne({emailId});
+        const normalizedEmail = emailId.trim().toLowerCase();
+        const user = await User.findOne({ emailId: normalizedEmail });
 
-        const match = await bcrypt.compare(password,user.password);
+        if(!user)
+            throw new Error("Invalid Credentials");
+
+        const match = await bcrypt.compare(password, user.password);
 
         if(!match)
             throw new Error("Invalid Credentials");
@@ -63,15 +67,15 @@ const login = async (req,res)=>{
             role:user.role,
         }
 
-        const token =  jwt.sign({_id:user._id , emailId:emailId, role:user.role},process.env.JWT_KEY,{expiresIn: 60*60});
+        const token = jwt.sign({_id:user._id , emailId:user.emailId, role:user.role}, process.env.JWT_KEY || 'default_jwt_key', {expiresIn: 60*60});
         res.cookie('token',token,{maxAge: 60*60*1000});
-        res.status(201).json({
+        res.status(200).json({
             user:reply,
-            message:"Loggin Successfully"
+            message:"Logged in Successfully"
         })
     }
     catch(err){
-        res.status(401).send("Error: "+err);
+        res.status(401).send("Error: "+ (err.message || err));
     }
 }
 
@@ -85,8 +89,10 @@ const logout = async(req,res)=>{
         const payload = jwt.decode(token);
 
 
-        await redisClient.set(`token:${token}`,'Blocked');
-        await redisClient.expireAt(`token:${token}`,payload.exp);
+        if (redisClient.isOpen) {
+            await redisClient.set(`token:${token}`,'Blocked');
+            await redisClient.expireAt(`token:${token}`,payload.exp);
+        }
     //    Token add kar dung Redis ke blockList
     //    Cookies ko clear kar dena.....
 
@@ -112,7 +118,7 @@ const adminRegister = async(req,res)=>{
     //
     
      const user =  await User.create(req.body);
-     const token =  jwt.sign({_id:user._id , emailId:emailId, role:user.role},process.env.JWT_KEY,{expiresIn: 60*60});
+     const token =  jwt.sign({_id:user._id , emailId:emailId, role:user.role}, process.env.JWT_KEY || 'default_jwt_key', {expiresIn: 60*60});
      res.cookie('token',token,{maxAge: 60*60*1000});
      res.status(201).send("User Registered Successfully");
     }
@@ -128,11 +134,7 @@ const deleteProfile = async(req,res)=>{
       
     // userSchema delete
     await User.findByIdAndDelete(userId);
-
-    // Submission se bhi delete karo...
-    
-    // await Submission.deleteMany({userId});
-    
+    res.cookie("token", null, { expires: new Date(Date.now()) });
     res.status(200).send("Deleted Successfully");
 
     }

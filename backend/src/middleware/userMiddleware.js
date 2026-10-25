@@ -10,7 +10,7 @@ const userMiddleware = async (req,res,next)=>{
         if(!token)
             throw new Error("Token is not persent");
 
-        const payload = jwt.verify(token,process.env.JWT_KEY);
+        const payload = jwt.verify(token, process.env.JWT_KEY || 'default_jwt_key');
 
         const {_id} = payload;
 
@@ -25,11 +25,11 @@ const userMiddleware = async (req,res,next)=>{
         }
 
         // Redis ke blockList mein persent toh nahi hai
-
-        const IsBlocked = await redisClient.exists(`token:${token}`);
-
-        if(IsBlocked)
-            throw new Error("Invalid Token");
+        if (redisClient.isOpen) {
+            const IsBlocked = await redisClient.exists(`token:${token}`);
+            if (IsBlocked)
+                throw new Error("Invalid Token");
+        }
 
         req.result = result;
 
