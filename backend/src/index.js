@@ -37,7 +37,18 @@ const complexityRouter = require("./routes/complexityAnalyzer");
 // Create HTTP server
 const server = http.createServer(app);
 
-const allowedOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:5175', 'http://127.0.0.1:5175'];
+const allowedOrigins = [
+    'http://localhost',
+    'http://127.0.0.1',
+    'http://localhost:80',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://localhost:5175',
+    'http://127.0.0.1:5175',
+    'http://head2code.duckdns.org',
+    'https://head2code.duckdns.org',
+    process.env.CLIENT_URL
+].filter(Boolean);
 
 // Setup Socket.io
 const io = new Server(server, {
@@ -47,6 +58,9 @@ const io = new Server(server, {
         methods: ['GET', 'POST']
     }
 });
+
+// Trust reverse proxy (Render, AWS ALB, Nginx)
+app.set('trust proxy', 1);
 
 app.use(cors({
     origin: allowedOrigins,

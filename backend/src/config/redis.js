@@ -22,4 +22,9 @@ if (process.env.REDIS_HOST) {
 
 const redisClient = createClient(redisOptions);
 
+// Prevent unhandled error event from crashing the server if Redis disconnects
+redisClient.on('error', (err) => {
+    console.warn('⚠️ Redis Client Error:', err.message);
+});
+
 module.exports = redisClient;

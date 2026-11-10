@@ -5,6 +5,14 @@ const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 const Submission = require("../models/submission")
 
+const isProduction = process.env.NODE_ENV === 'production';
+const getCookieOptions = (maxAge = 60 * 60 * 1000) => ({
+    maxAge,
+    httpOnly: true,
+    sameSite: isProduction ? 'none' : 'lax',
+    secure: isProduction
+});
+
 
 const register = async (req,res)=>{
     
@@ -27,7 +35,7 @@ const register = async (req,res)=>{
         role:user.role,
     }
     
-     res.cookie('token',token,{maxAge: 60*60*1000});
+     res.cookie('token', token, getCookieOptions());
      res.status(201).json({
         user:reply,
         message:"Loggin Successfully"
@@ -68,7 +76,7 @@ const login = async (req,res)=>{
         }
 
         const token = jwt.sign({_id:user._id , emailId:user.emailId, role:user.role}, process.env.JWT_KEY || 'default_jwt_key', {expiresIn: 60*60});
-        res.cookie('token',token,{maxAge: 60*60*1000});
+        res.cookie('token', token, getCookieOptions());
         res.status(200).json({
             user:reply,
             message:"Logged in Successfully"
@@ -96,7 +104,7 @@ const logout = async(req,res)=>{
     //    Token add kar dung Redis ke blockList
     //    Cookies ko clear kar dena.....
 
-    res.cookie("token",null,{expires: new Date(Date.now())});
+    res.cookie("token", null, { ...getCookieOptions(0), expires: new Date(0) });
     res.send("Logged Out Succesfully");
 
     }
@@ -119,7 +127,7 @@ const adminRegister = async(req,res)=>{
     
      const user =  await User.create(req.body);
      const token =  jwt.sign({_id:user._id , emailId:emailId, role:user.role}, process.env.JWT_KEY || 'default_jwt_key', {expiresIn: 60*60});
-     res.cookie('token',token,{maxAge: 60*60*1000});
+     res.cookie('token', token, getCookieOptions());
      res.status(201).send("User Registered Successfully");
     }
     catch(err){
@@ -134,7 +142,7 @@ const deleteProfile = async(req,res)=>{
       
     // userSchema delete
     await User.findByIdAndDelete(userId);
-    res.cookie("token", null, { expires: new Date(Date.now()) });
+    res.cookie("token", null, { ...getCookieOptions(0), expires: new Date(0) });
     res.status(200).send("Deleted Successfully");
 
     }
