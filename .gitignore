@@ -5,3 +5,5 @@ backend/.env
 frontend/.env
 .DS_Store
 dist
+*.bak
+*.NEW.pptx
